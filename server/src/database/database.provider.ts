@@ -1,11 +1,13 @@
 import { Sequelize } from "sequelize-typescript";
-import { User } from "./models/user";
+import { User } from "./models/user.entity";
+import { DatabaseEntity } from "./models/database.entity";
+import { DatabaseProviderName } from "src/constants";
 
 
 
 export const databaseProviders = [
     {
-      provide: 'SEQUELIZE',
+      provide: DatabaseProviderName,
       useFactory: async () => {
         const sequelize = new Sequelize({
           dialect: 'sqlite',
@@ -15,7 +17,7 @@ export const databaseProviders = [
           password: 'password',
           database: 'nest',
         });
-        sequelize.addModels([User]);
+        sequelize.addModels([User, DatabaseEntity]);
         await sequelize.sync();
         return sequelize;
       },
