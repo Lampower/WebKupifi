@@ -1,16 +1,18 @@
-import { BelongsToMany, Column, HasMany, Model, PrimaryKey, Table } from "sequelize-typescript";
 import { User } from "./user.entity";
-import { UserDatabase } from "./userDatabase.entity";
+import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
 
-@Table
-export class DatabaseEntity extends Model {
+@Entity()
+export class DatabaseEntity {
 
-    @Column
+    @PrimaryGeneratedColumn()
+    public id: number
+
+    @Column()
     public dns: string
 
-    @Column
+    @Column()
     public name: string
 
-    @BelongsToMany(() => User, () => UserDatabase)
+    @ManyToMany(() => User)
     public users: User[]
 }

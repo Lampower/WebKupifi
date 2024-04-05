@@ -1,17 +1,18 @@
 import { Module } from '@nestjs/common';
-import { SequelizeModule } from "@nestjs/sequelize";
 import { User } from './models/user.entity';
 import { DatabaseEntity } from './models/database.entity';
-import { UserDatabase } from './models/userDatabase.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [
-    SequelizeModule.forRoot({
-      dialect: 'sqlite',
+    TypeOrmModule.forRoot({
+      type: 'sqlite',
       // name: 'user',
-      storage: `../server/db.sqlite`,
-      models: [User, DatabaseEntity, UserDatabase]
+      database: "../server/db.sqlite",
+      autoLoadEntities: true,
+      synchronize: true,
+      entities: [User, DatabaseEntity]
     })
-  ]
+  ],
 })
 export class DatabaseModule {}
