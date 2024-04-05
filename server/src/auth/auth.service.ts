@@ -5,18 +5,18 @@ import { User } from 'src/database/models/user.entity';
 
 @Injectable()
 export class AuthService {
-    constructor (@Inject(UserRepName) private readonly user: typeof User)
-    {}
+    // constructor (@Inject(UserRepName) private readonly user: typeof User)
+    // {}
 
 
-    async getAll()
-    {
-        return await this.user.findAll();
-    }
+    // async getAll()
+    // {
+    //     return await this.user.findAll();
+    // }
 
-    async create(user2create: UserCreateDto)
-    {
-        return await this.user.create({user2create});
+    // async create(user2create: UserCreateDto)
+    // {
+    //     return await this.user.create({user2create});
         
-    }
+    // }
 }
