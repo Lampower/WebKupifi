@@ -1,15 +1,18 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { User } from 'src/database/models/user.entity';
-import { DatabaseEntity } from 'src/database/models/database.entity';
 import { DataSource, Repository } from 'typeorm';
 import { UserCreateDto } from './dto/userCreateDto';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
 
     private readonly userModel: Repository<User>;
 
-    constructor (dataSource: DataSource) { 
+    constructor (
+        private dataSource: DataSource,
+        private jwtService: JwtService
+    ) { 
         this.userModel = dataSource.getRepository(User)
     } 
     
@@ -41,12 +44,18 @@ export class AuthService {
         user.email = user2create.email;
         user.password = user2create.password;
 
-        return await this.userModel.create(user);
+        const createdUser = await this.userModel.create(user);
+        
     }
 
     async update(id: number, user: User)
     {
         return await this.userModel.update(id, user);
+    }
+
+    async checkToken(token: string)
+    {
+
     }
 
     async checkByUsernameOrEmail(username: string, email: string, password: string)
@@ -56,4 +65,23 @@ export class AuthService {
         if (username && !email) return await this.userModel.existsBy({username, password});
         return await this.userModel.existsBy({username, email, password});
     }
+
+    async exists(username: string, email: string)
+    {
+        return (await this.userModel.existsBy({username}) || await this.userModel.existsBy({email}));
+    }
+
+    async signIn(
+        username: string,
+        pass: string,
+      ): Promise<{ access_token: string }> {
+        const user = await this.userModel.findOne({where: {username}});
+        if (user?.password !== pass) {
+          throw new UnauthorizedException();
+        }
+        const payload = { id: user.id, username: user.username, email: user.email };
+        return {
+          access_token: await this.jwtService.signAsync(payload),
+        };
+      }
 }
