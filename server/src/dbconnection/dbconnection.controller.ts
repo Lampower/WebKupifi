@@ -1,4 +1,6 @@
 import { Controller } from '@nestjs/common';
 
-@Controller('dbconnection')
-export class DbconnectionController {}
+@Controller('database')
+export class DbconnectionController {
+    
+}

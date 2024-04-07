@@ -3,6 +3,7 @@ import { User } from 'src/database/models/user.entity';
 import { DataSource, Repository } from 'typeorm';
 import { UserCreateDto } from './dto/userCreateDto';
 import { JwtService } from '@nestjs/jwt';
+import { UserPayload } from './dto/userPayload';
 
 @Injectable()
 export class AuthService {
@@ -39,13 +40,26 @@ export class AuthService {
 
     async create(user2create: UserCreateDto)
     {
-        const user = new User()
+        const user = new User();
         user.username = user2create.username;
         user.email = user2create.email;
         user.password = user2create.password;
 
-        const createdUser = await this.userModel.create(user);
-        
+        const createdUser = await this.userModel.save(user);
+        const userPayload = new UserPayload();
+        userPayload.id = createdUser.id;
+        userPayload.email = createdUser.email;
+        userPayload.username = createdUser.username;
+
+        return {
+            access_token: await this.jwtService.signAsync(userPayload),
+          };
+    }
+    async getToken(userPayload: UserPayload)
+    {
+        return {
+            access_token: await this.jwtService.signAsync(userPayload),
+          };
     }
 
     async update(id: number, user: User)
@@ -53,9 +67,10 @@ export class AuthService {
         return await this.userModel.update(id, user);
     }
 
-    async checkToken(token: string)
+    async verifyToken(token: string): Promise<UserPayload>
     {
-
+        const payload = await this.jwtService.verifyAsync<UserPayload>(token).catch(() => {return null});
+        return payload;
     }
 
     async checkByUsernameOrEmail(username: string, email: string, password: string)
@@ -73,9 +88,10 @@ export class AuthService {
 
     async signIn(
         username: string,
+        email: string,
         pass: string,
-      ): Promise<{ access_token: string }> {
-        const user = await this.userModel.findOne({where: {username}});
+    ): Promise<{ access_token: string }> {
+        const user = await this.userModel.findOne({where: {email: email}});
         if (user?.password !== pass) {
           throw new UnauthorizedException();
         }
@@ -83,5 +99,10 @@ export class AuthService {
         return {
           access_token: await this.jwtService.signAsync(payload),
         };
-      }
+    }
+    
+    async changeName(id: number, newUsername: string)
+    {
+        return await this.userModel.update({id}, {username: newUsername});
+    }
 }
